@@ -1,0 +1,270 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            #cv{
+                border: 1px solid #ccc;
+            }
+            body{
+                font-family: sans-serif;
+            }
+            #video{
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="ctr">0</div>
+        <div id="pixelcnt">0</div>
+
+        Threshold: <input id="threshold" type="range" min="0" max="255" value="127" onchange="document.getElementById('threshold_label').innerText = document.getElementById('threshold').value"> <span id="threshold_label">127</span><br/>
+        Max-Dist: <input id="dist" type="range" min="0" max="255" value="127" onchange="document.getElementById('dist_label').innerText = document.getElementById('dist').value"> <span id="dist_label">127</span><br/>
+        Min-Size: <input id="size" type="range" min="0" max="255" value="127" onchange="document.getElementById('size_label').innerText = document.getElementById('size').value"> <span id="size_label">127</span><br/>
+        Decay: <input id="decay" type="range" min="0" max="1" value="0.03" step="0.01" onchange="document.getElementById('decay_label').innerText = document.getElementById('decay').value"> <span id="decay_label">0.03</span><br/>
+        <canvas id="cv" width="1280" height="720"></canvas>
+        <video id="video"></video>
+        <div id="blobs"> </div>
+        <script>
+            document.getElementById('threshold_label').innerText = document.getElementById('threshold').value;
+            document.getElementById('size_label').innerText = document.getElementById('size').value;
+            document.getElementById('dist_label').innerText = document.getElementById('dist').value;
+            document.getElementById('decay_label').innerText = document.getElementById('decay').value;
+            var canvas = document.getElementById('cv');
+            var datacv = document.createElement('canvas');
+            datacv.width = 1280;
+            datacv.height = 720;
+            datacv.style.display = "none";
+            document.body.appendChild(datacv);
+            var datactx = datacv.getContext('2d');
+            var ctx = canvas.getContext('2d');
+            var ctr = 1;
+            var id0 = null;
+            var blobNames = new Uint32Array(1280*720);
+
+            var distance = ([x0,y0],[x1,y1]) => Math.pow(x0-x1,2) + Math.pow(y0 - y1,2);
+            var globalBlobs = [];
+
+            var nextBlobId = 0;
+
+            video = document.querySelector('video');
+            navigator.mediaDevices.getUserMedia({
+                audio: false,
+                video: {
+                    width: {min: 1280}, height: {min: 720} //configure video size to match canvas settings
+                }
+                //Once the video permission has been granted, start the video and a while later, start the GPU
+            }).then((stream)=>{video.srcObject = stream; video.play(); setTimeout( drawScene, 1000);}).catch((e)=>console.error(e));
+
+            function drawScene(){
+                console.log("frame");
+                ctx.drawImage(video,0,0);
+                datactx.drawImage(video,0,0);
+                var threshold = parseInt(document.getElementById('threshold_label').innerText);
+                var decay = parseFloat(document.getElementById('decay_label').innerText);
+                var dist = Math.pow(parseInt(document.getElementById('dist_label').innerText), 2);
+                var size = parseInt(document.getElementById('size_label').innerText);
+                var pixels = 0;
+                var blobs = [];
+                if(id0 == null){
+                    id0 = datactx.getImageData(0,0,1280,720);
+                }else{
+                    var id = datactx.getImageData(0,0,1280,720);
+                    for(var i = 0; i < id.data.length; i+=4){
+                        var x = (i/4) % 1280;
+                        var y = (i/4) / 1280 | 0;
+                        var inBlob = false;
+                        for(b of globalBlobs){
+                            if(distance([x,y],b.center) < dist){
+                                inBlob = true;
+                                break;
+                            }
+                        }
+                        var decayed = id0.data[i];
+                        if(!inBlob){
+                            decayed = id0.data[i] + ((id.data[i] - id0.data[i]) * decay);
+                        };
+                        var d =id.data[i];
+                        var z = id0.data[i];
+                        var data= (d - z);
+                        var threshed = data > threshold ? 255 : 0;
+                        id.data[i] = (d - z) * 2;
+                        id.data[i+1] = threshed;
+                        if(threshed > 0){
+                            if(pixels > 50000) return;
+                            pixels ++;
+                            var inserted = false;
+
+                            for(blob of blobs){
+                                if(distance(blob.center,[x,y]) < dist){
+                                    blob.pixels.push([x,y]);
+                                    blob.center = blob.pixels.reduce(([prevX, prevY], [nextX, nextY]) => [prevX + nextX, prevY + nextY],[0,0]).map(v => v / blob.pixels.length);
+                                    inserted = true;
+                                    break;
+                                }
+                            }
+                            if(!inserted){ //new pixel
+                                var blob = {
+                                    center: [x,y],
+                                    pixels: [[x,y]],
+                                    id: null
+                                };
+                                blobs.push(blob);
+                            }
+                        }
+                        //id.data[i+2] = //id0.data[i] / 2;
+                        //id0.data[i] = decayed;
+                        id.data[i+2] = decayed;
+                        id0.data[i] = decayed;
+                    }
+                    blobs = blobs.filter(b => b.pixels.length > size);
+
+
+                    for(globalblob of globalBlobs){
+                        for(blob of blobs){
+                            if(blob.id != null) continue;
+                            if(distance(globalblob.center, blob.center) < dist){
+                                blob.id = globalblob.id;
+                                break;
+                            }
+                        }
+                    }
+
+                    blobs.filter(b => b.id == null).forEach(b => b.id = nextBlobId ++);
+
+                    globalBlobs = blobs;
+
+
+                    document.getElementById('pixelcnt').innerText = blobs.length;
+                    document.getElementById('blobs').innerText = JSON.stringify(blobs.map(b => b.id));
+                    ctx.putImageData(id,0,0);
+                    ctx.fillStyle = "#000000";
+                    blobs.forEach((b,i) => {
+                        ctx.fillStyle = `hsl(${b.id / blobs.length * 360},100%,50%)`;
+                        b.pixels.forEach(([x,y]) => {
+                            ctx.fillRect(x,y,1,1);
+                        });                            
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillText(b.id,b.center[0],b.center[1]);
+                    })
+                }
+                setTimeout(drawScene,100);
+            }
+
+
+            function next(){
+                var im = new Image();
+                im.onload = function(){
+                        ctx.drawImage(im,0,0);
+                        datactx.drawImage(im,0,0);
+                        var threshold = parseInt(document.getElementById('threshold_label').innerText);
+                        var decay = parseFloat(document.getElementById('decay_label').innerText);
+                        var dist = Math.pow(parseInt(document.getElementById('dist_label').innerText), 2);
+                        var size = parseInt(document.getElementById('size_label').innerText);
+                        var pixels = 0;
+                        var blobs = [];
+                        if(id0 == null){
+                            id0 = datactx.getImageData(0,0,1280,720);
+                        }else{
+                            var id = datactx.getImageData(0,0,1280,720);
+                            for(var i = 0; i < id.data.length; i+=4){
+                                var decayed = id0.data[i] + ((id.data[i] - id0.data[i]) * decay);
+                                var d =id.data[i];
+                                var z = id0.data[i];
+                                var data= (d - z);
+                                var threshed = data > threshold ? 255 : 0;
+                                id.data[i] = (d - z) * 2;
+                                id.data[i+1] = threshed;
+                                if(threshed > 0){
+                                    pixels ++;
+                                    var inserted = false;
+                                    var x = (i/4) % 1280;
+                                    var y = (i/4) / 1280 | 0;
+                                    for(blob of blobs){
+                                        if(distance(blob.center,[x,y]) < dist){
+                                            blob.pixels.push([x,y]);
+                                            blob.center = blob.pixels.reduce(([prevX, prevY], [nextX, nextY]) => [prevX + nextX, prevY + nextY],[0,0]).map(v => v / blob.pixels.length);
+                                            inserted = true;
+                                            break;
+                                        }
+                                    }
+                                    if(!inserted){ //new pixel
+                                        var blob = {
+                                            center: [x,y],
+                                            pixels: [[x,y]],
+                                            id: null
+                                        };
+                                        blobs.push(blob);
+                                    }
+                                }
+                                //id.data[i+2] = //id0.data[i] / 2;
+                                //id0.data[i] = decayed;
+                                id.data[i+2] = decayed;
+                                id0.data[i] = decayed;
+                            }
+                            blobs = blobs.filter(b => b.pixels.length > size);
+
+
+                            for(globalblob of globalBlobs){
+                                for(blob of blobs){
+                                    if(blob.id != null) continue;
+                                    if(distance(globalblob.center, blob.center) < dist){
+                                        blob.id = globalblob.id;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            blobs.filter(b => b.id == null).forEach(b => b.id = nextBlobId ++);
+
+                            globalBlobs = blobs;
+
+
+                            document.getElementById('pixelcnt').innerText = blobs.length;
+                            document.getElementById('blobs').innerText = JSON.stringify(blobs.map(b => b.id));
+                            ctx.putImageData(id,0,0);
+                            ctx.fillStyle = "#000000";
+                            blobs.forEach((b,i) => {
+                                ctx.fillStyle = `hsl(${b.id / blobs.length * 360},100%,50%)`;
+                                b.pixels.forEach(([x,y]) => {
+                                    ctx.fillRect(x,y,1,1);
+                                });                            
+                                ctx.fillStyle = "#FFFFFF";
+                                ctx.fillText(b.id,b.center[0],b.center[1]);
+                            })
+                        }
+                        
+                        document.getElementById('ctr').innerText = ctr;
+                        ctr ++;
+                        if(ctr == 999){
+                            ctr = 1;
+                        }
+                };
+                im.src = (`frames2/a${("00" + ctr).slice(-3)}.png`);
+            }
+
+
+            var interval = null;
+
+            window.addEventListener('keydown', e => {
+                console.log(e);
+                if(e.key == "ArrowLeft"){
+                    if(ctr > 2){
+                        ctr -= 2;
+                        next();
+                    }
+                }
+                if(e.key == "ArrowRight"){
+                    next();
+                }
+                if(e.key == " "){
+                    if(interval){
+                        clearInterval(interval);
+                        interval = null;
+                    }else{
+                        interval = setInterval(next,30);
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>
