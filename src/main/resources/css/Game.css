@@ -1,0 +1,7 @@
+#gPane {
+    -fx-background-color: #000000;
+    -fx-border-style: solid;
+    -fx-border-width: 10;
+    -fx-border-color: black;
+    -fx-background-image: url("/img/bg_stars.jpg")
+}

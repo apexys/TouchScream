@@ -1,0 +1,7 @@
+#ngVBox {
+    -fx-background-color: #CCFF99;
+    -fx-border-style: solid;
+    -fx-border-width: 10;
+    -fx-border-color: black;
+    -fx-border-radius: 25;
+}
