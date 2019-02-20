@@ -22,6 +22,11 @@ public class JavaFX {
         });
     }
 
+    public static void runOnFXThread(Runnable aRunnable)
+    {
+        Platform.runLater(aRunnable);
+    }
+
     public static void updateImageView(ImageView view, Image image)
     {
         JavaFX.setPropertyOnFXThread(view.imageProperty(), image);

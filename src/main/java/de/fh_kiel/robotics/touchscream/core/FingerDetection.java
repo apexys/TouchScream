@@ -1,5 +1,6 @@
 package de.fh_kiel.robotics.touchscream.core;
 
+import javafx.geometry.Point2D;
 import org.opencv.core.Mat;
 
 import java.util.ArrayList;
@@ -84,7 +85,7 @@ public class FingerDetection implements Camera.CameraListener {
             //TODO: Stuff that needs to be in Order
             try { Thread.sleep((int)(Math.random()*100),100); } catch (InterruptedException e) { e.printStackTrace(); }
 
-            mListener.forEach(l->System.err.println("SendBlobsToListeners!"));
+            mListener.forEach(l->{System.err.println("SendBlobsToListeners!"); List<Blob> vTestBlobs = new ArrayList<>(); vTestBlobs.add(new Blob(new Point2D(100,100))); vTestBlobs.add(new Blob(new Point2D(300,100))); l.newBlobs(vTestBlobs);});
             nextStep();
             System.err.println("Finished " + getStep());
         }

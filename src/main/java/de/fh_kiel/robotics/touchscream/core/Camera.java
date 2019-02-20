@@ -45,6 +45,8 @@ public class Camera {
     private int mCameraId = 0;
     private VideoCapture mCapture = new VideoCapture();
 
+    private volatile int mSizeOfFrameX = 640, mSizeOfFrameY=480;
+
     Runnable mFrameGrabber = new Runnable() {
 
         @Override
@@ -54,6 +56,14 @@ public class Camera {
             mListener.forEach(l->l.newImage(mFrame));
         }
     };
+
+    public int getSizeOfFrameX() {
+        return mSizeOfFrameX;
+    }
+
+    public int getSizeOfFrameY() {
+        return mSizeOfFrameY;
+    }
 
     public boolean isCameraActive() {
         return mCameraActive;
@@ -108,17 +118,20 @@ public class Camera {
 
     private Mat grabFrame()
     {
-        Mat frame = new Mat();
+        Mat vFrame = new Mat();
 
         if (this.mCapture.isOpened())
         {
             try
             {
-                this.mCapture.read(frame);
+                this.mCapture.read(vFrame);
 
-                if (!frame.empty())
+                if (!vFrame.empty())
                 {
-                    cvtColor(frame, frame, COLOR_BGR2GRAY);
+                    cvtColor(vFrame, vFrame, COLOR_BGR2GRAY);
+
+                    mSizeOfFrameX = vFrame.cols();
+                    mSizeOfFrameY = vFrame.rows();
                 }
 
             }
@@ -128,7 +141,9 @@ public class Camera {
             }
         }
 
-        return frame;
+
+
+        return vFrame;
     }
 
     private void stopAcquisition()
