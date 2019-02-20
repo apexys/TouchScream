@@ -1,10 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.fh_kiel.robotics.touchscream.gui.ControllerMain">
+   <left>
+      <Accordion minWidth="-Infinity" prefWidth="200.0" BorderPane.alignment="CENTER">
+        <panes>
+          <TitledPane animated="false" text="Camera">
+               <content>
+                  <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
+                     <children>
+                        <Button fx:id="fxCameraToggle" mnemonicParsing="false" onAction="#toggleCamera" prefWidth="196.0" text="Start" VBox.vgrow="ALWAYS" />
+                        <HBox alignment="CENTER" spacing="10.0" VBox.vgrow="NEVER">
+                           <children>
+                              <Label alignment="CENTER" contentDisplay="CENTER" text="Id" textAlignment="CENTER" />
+                              <TextField fx:id="fxCameraId" alignment="CENTER" prefWidth="25.0" text="0" />
+                              <Separator prefWidth="25.0" />
+                              <Label text="FPS" />
+                              <TextField fx:id="fxFPS" onAction="#changeFPS" prefWidth="40.0" text="30" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </content>
+          </TitledPane>
+          <TitledPane animated="false" text="TouchDetection">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            </content>
+          </TitledPane>
+          <TitledPane animated="false" text="Calibration">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            </content>
+          </TitledPane>
+            <TitledPane animated="false" text="Network">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+              </content>
+            </TitledPane>
+        </panes>
+      </Accordion>
+   </left>
    <center>
-      <ImageView fx:id="imgpane" fitHeight="189.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER" />
+      <Pane fx:id="fxImagePane" prefHeight="400.0" prefWidth="400.0" BorderPane.alignment="CENTER">
+         <children>
+             <ImageView fx:id="fxVideo" onMouseClicked="#toggleVideo" smooth="false">
+                 <image>
+                     <Image url="@img/bg_stars.jpg" />
+                 </image>
+             </ImageView>
+         </children>
+      </Pane>
    </center>
 </BorderPane>

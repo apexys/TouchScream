@@ -2,6 +2,11 @@ plugins {
     id 'java'
 }
 
+def opencv="D:/Tools/OpenCV"
+
+def openCvJar="$opencv/build/java/opencv-401.jar"
+def openCvLibFolder="$opencv/build/java/x64"
+
 group 'de.fh-kiel.robotics'
 version '1.0-SNAPSHOT'
 
@@ -22,8 +27,15 @@ sourceSets {
     }
 }
 
-
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile group: 'org.openpnp', name: 'opencv', version: '3.4.2-1'
+    compile files(openCvJar)
 }
+
+tasks.withType(Test) {
+    systemProperty "java.library.path", openCvLibFolder // library configuration for unit tests
+}
+
+apply plugin:'application'
+mainClassName  = 'de.fh_kiel.robotics.touchscream.Main'
+applicationDefaultJvmArgs = ["-Djava.library.path=$openCvLibFolder"]

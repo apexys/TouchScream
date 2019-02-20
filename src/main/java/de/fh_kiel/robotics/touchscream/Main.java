@@ -1,41 +1,27 @@
 package de.fh_kiel.robotics.touchscream;
 
+import de.fh_kiel.robotics.touchscream.core.Camera;
 import javafx.application.Application;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.videoio.VideoCapture;
 
-import javax.imageio.ImageIO;
+import java.io.IOException;
 
-public class Main extends Application implements Runnable{
+public class Main extends Application{
 
     public static void main(String[] args) {
+        // load the native OpenCV library
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         launch(args);
     }
-
-    @FXML
-    private ImageView imgpane;
 
     @Override
     public void start(Stage primaryStage) throws IOException {
 
-        Parent root = FXMLLoader.load(getClass().getResource("MainGui.fxml"));
+        Parent root = FXMLLoader.load(Main.class.getClassLoader().getResource("MainGui.fxml"));
 
         final Scene scene = new Scene(root, 800, 600);
 
@@ -48,24 +34,8 @@ public class Main extends Application implements Runnable{
     }
 
     @Override
-    public void run() {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        VideoCapture camera = new VideoCapture(0);
-        // 1 for next camera
-        int i = 0;
-        try {
-
-            Mat frame = new Mat();
-            while (true) {
-                camera.read(frame);
-                MatOfByte byteMat = new MatOfByte();
-                Imgcodecs.imencode(".bmp", frame, byteMat);
-                Image im = new Image(new ByteArrayInputStream(byteMat.toArray()));
-                imgpane.setImage(im);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void stop() throws Exception {
+        super.stop();
+        Camera.instance().close();
     }
 }
