@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.image.Image?>
@@ -37,15 +38,64 @@
                </content>
           </TitledPane>
           <TitledPane animated="false" text="TouchDetection">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-            </content>
+               <content>
+                  <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
+                     <children>
+                        <Button fx:id="fxTouchDetectionToggle" mnemonicParsing="false" onAction="#toggleDetection" prefHeight="22.0" prefWidth="220.0" text="Start" />
+                        <TitledPane animated="false" collapsible="false" ellipsisString="" text="Threshold">
+                           <content>
+                              <HBox alignment="CENTER" spacing="5.0">
+                                 <children>
+                                    <TextField fx:id="fxDetectionThreshold" alignment="CENTER" onAction="#setDetectionThreshold" prefWidth="40.0" text="127" />
+                                    <Slider fx:id="fxDetectionThresholdSlider" blockIncrement="1.0" max="255.0" prefWidth="120.0" value="127.0" />
+                                 </children>
+                              </HBox>
+                           </content>
+                        </TitledPane>
+                        <TitledPane animated="false" collapsible="false" ellipsisString="" text="Max. Radius">
+                           <content>
+                              <HBox alignment="CENTER" spacing="5.0">
+                                 <children>
+                                    <TextField fx:id="fxDetectionMaxRadius" alignment="CENTER" onAction="#setDetectionMaxRadius" prefWidth="40.0" text="127" />
+                                    <Slider fx:id="fxDetectionMaxRadiusSlider" blockIncrement="1.0" max="255.0" prefWidth="120.0" value="127.0" />
+                                 </children>
+                              </HBox>
+                           </content>
+                        </TitledPane>
+                        <TitledPane animated="false" collapsible="false" ellipsisString="" text="Min. Number of Pixel">
+                           <content>
+                              <HBox alignment="CENTER" spacing="5.0">
+                                 <children>
+                                    <TextField fx:id="fxDetectionMinSize" alignment="CENTER" onAction="#setDetectionMinSize" prefWidth="40.0" text="127" />
+                                    <Slider fx:id="fxDetectionMinSizeSlider" blockIncrement="1.0" max="255.0" prefWidth="120.0" value="127.0" />
+                                 </children>
+                              </HBox>
+                           </content>
+                        </TitledPane>
+                        <TitledPane animated="false" collapsible="false" ellipsisString="" text="Decay">
+                           <content>
+                              <HBox alignment="CENTER" spacing="5.0">
+                                 <children>
+                                    <TextField fx:id="fxDetectionDecay" alignment="CENTER" onAction="#setDetectionDecay" prefWidth="40.0" text="0.03" />
+                                    <Slider fx:id="fxDetectionDecaySlider" blockIncrement="0.01" max="1.0" prefWidth="120.0" value="0.03" />
+                                 </children>
+                              </HBox>
+                           </content>
+                        </TitledPane>
+                     </children>
+                  </VBox>
+               </content>
           </TitledPane>
           <TitledPane animated="false" text="Calibration">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
             </content>
           </TitledPane>
+            <TitledPane animated="false" text="Robot">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+              </content>
+            </TitledPane>
             <TitledPane animated="false" text="Network">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />

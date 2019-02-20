@@ -139,6 +139,7 @@ public class Camera {
         {
             this.mCapture.release();
         }
+        this.mCameraActive = false;
     }
 
 
