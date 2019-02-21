@@ -1,6 +1,8 @@
 package de.fh_kiel.robotics.touchscream.core;
 
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 
 import java.util.List;
@@ -11,6 +13,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.opencv.imgproc.Imgproc.COLOR_BGR2GRAY;
 import static org.opencv.imgproc.Imgproc.cvtColor;
+import org.opencv.highgui.HighGui;
+import org.opencv.videoio.Videoio;
 
 public class Camera {
 
@@ -53,7 +57,9 @@ public class Camera {
         public void run()
         {
             Mat mFrame = grabFrame();
-            mListener.forEach(l->l.newImage(mFrame));
+            if(!mFrame.empty()) {
+                mListener.forEach(l -> l.newImage(mFrame));
+            }
         }
     };
 
@@ -92,7 +98,8 @@ public class Camera {
     private void startCapturingFrames(){
         if (this.mCapture.isOpened())
         {
-
+            this.mCapture.set(Videoio.CAP_PROP_FRAME_WIDTH, 1280);
+            this.mCapture.set(Videoio.CAP_PROP_FRAME_HEIGHT, 720);
             this.mTimer = Executors.newSingleThreadScheduledExecutor();
             this.mTimer.scheduleAtFixedRate(mFrameGrabber, 0, Math.max(1000/mFPS, 5), TimeUnit.MILLISECONDS);
 

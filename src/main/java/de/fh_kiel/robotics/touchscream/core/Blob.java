@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Blob {
 
-    private static int IDCOUNTER = 0;
+    private static volatile int IDCOUNTER = 0;
 
     private Point2D mCenter;
     private final List<Point2D> mPoints = new ArrayList<>(1000);
@@ -16,6 +16,10 @@ public class Blob {
 
     public Blob(int aPointX, int aPointY){
         this(new Point2D(aPointX,aPointY));
+    }
+
+    public Blob(){
+        mCenter = new Point2D(0,0);
     }
 
     public Blob(Point2D aPoint){

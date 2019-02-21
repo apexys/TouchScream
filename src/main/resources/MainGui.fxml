@@ -28,7 +28,7 @@
                   <Button mnemonicParsing="false" onAction="#saveConfiguration" text="Save Configuration" />
                </children>
             </HBox>
-            <Accordion minWidth="-Infinity" prefWidth="200.0">
+            <Accordion minWidth="-Infinity" prefWidth="200.0" VBox.vgrow="ALWAYS">
               <panes>
                 <TitledPane animated="false" text="Camera">
                      <content>
@@ -73,6 +73,16 @@
                                     </HBox>
                                  </content>
                               </TitledPane>
+                              <TitledPane animated="false" collapsible="false" ellipsisString="" layoutX="20.0" layoutY="136.0" text="Max. Move Range">
+                                 <content>
+                                    <HBox alignment="CENTER" spacing="5.0">
+                                       <children>
+                                          <TextField fx:id="fxDetectionMaxMoveRange" alignment="CENTER" onAction="#setDetectionMaxMoveRange" prefWidth="40.0" text="127" />
+                                          <Slider fx:id="fxDetectionMaxMoveRangeSlider" blockIncrement="1.0" max="255.0" prefWidth="120.0" value="127.0" />
+                                       </children>
+                                    </HBox>
+                                 </content>
+                              </TitledPane>
                               <TitledPane animated="false" collapsible="false" ellipsisString="" text="Min. Number of Pixel">
                                  <content>
                                     <HBox alignment="CENTER" spacing="5.0">
@@ -83,6 +93,7 @@
                                     </HBox>
                                  </content>
                               </TitledPane>
+                              <Button layoutX="20.0" layoutY="20.0" mnemonicParsing="false" onAction="#resetBaseImage" prefHeight="22.0" prefWidth="210.0" text="Reset Base Image" />
                               <TitledPane animated="false" collapsible="false" ellipsisString="" text="Decay">
                                  <content>
                                     <HBox alignment="CENTER" spacing="5.0">

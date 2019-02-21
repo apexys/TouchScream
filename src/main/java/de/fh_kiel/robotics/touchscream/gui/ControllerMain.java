@@ -63,6 +63,8 @@ public class ControllerMain implements Camera.CameraListener, FingerDetection.De
     @FXML
     public TextField fxDetectionDecay;
     @FXML
+    public TextField fxDetectionMaxMoveRange;
+    @FXML
     public Slider fxDetectionThresholdSlider;
     @FXML
     public Slider fxDetectionMaxRadiusSlider;
@@ -70,6 +72,8 @@ public class ControllerMain implements Camera.CameraListener, FingerDetection.De
     public Slider fxDetectionMinSizeSlider;
     @FXML
     public Slider fxDetectionDecaySlider;
+    @FXML
+    public Slider fxDetectionMaxMoveRangeSlider;
 
 
     @FXML
@@ -133,12 +137,24 @@ public class ControllerMain implements Camera.CameraListener, FingerDetection.De
 
             }
         });
+        fxDetectionMaxMoveRangeSlider.valueProperty().addListener(new ChangeListener() {
+
+            @Override
+            public void changed(ObservableValue arg0, Object arg1, Object arg2) {
+
+                FingerDetection.instance().setMaxMoveRange((int) fxDetectionMaxMoveRangeSlider.getValue());
+                fxDetectionMaxMoveRange.setText(Integer.toString((int) fxDetectionMaxMoveRangeSlider.getValue()));
+
+            }
+        });
     }
 
     public void loadConfiguration(ActionEvent actionEvent) {
         Properties vProperties = new Properties();
 
         final FileChooser vFileChooser = new FileChooser();
+        vFileChooser.setTitle("Load TouchScream Configuration");
+        vFileChooser.setInitialDirectory(new File("."));
         File vFile = vFileChooser.showOpenDialog(mStage);
         if(vFile == null){
             return;
@@ -173,12 +189,17 @@ public class ControllerMain implements Camera.CameraListener, FingerDetection.De
         fxDetectionDecay.setText(vDetectionDecay);
         fxDetectionDecaySlider.setValue(Double.parseDouble(vDetectionDecay));
         FingerDetection.instance().setDecay(Double.parseDouble(vDetectionDecay));
-
+        String vDetectionMaxMovementRange = vProperties.getProperty("DetectionMaxMoveRange", fxDetectionMaxMoveRange.getText());
+        fxDetectionMaxMoveRange.setText(vDetectionMaxMovementRange);
+        fxDetectionMaxMoveRangeSlider.setValue(Double.parseDouble(vDetectionMaxMovementRange));
+        FingerDetection.instance().setMaxMoveRange(Integer.parseInt(vDetectionMaxMovementRange));
     }
 
     public void saveConfiguration(ActionEvent actionEvent) {
 
         final FileChooser vFileChooser = new FileChooser();
+        vFileChooser.setTitle("Save TouchScream Configuration");
+        vFileChooser.setInitialDirectory(new File("."));
         File vFile = vFileChooser.showSaveDialog(mStage);
         if(vFile == null){
             return;
@@ -192,6 +213,7 @@ public class ControllerMain implements Camera.CameraListener, FingerDetection.De
             vProperties.setProperty("DetectionMaxRadius", fxDetectionMaxRadius.getText());
             vProperties.setProperty("DetectionMinNumberOfPixel", fxDetectionMinSize.getText());
             vProperties.setProperty("DetectionDecay", fxDetectionDecay.getText());
+            vProperties.setProperty("DetectionMaxMoveRange", fxDetectionMaxMoveRange.getText());
 
             vProperties.store(out, "Configuration TouchScream");
         }
@@ -242,6 +264,11 @@ public class ControllerMain implements Camera.CameraListener, FingerDetection.De
     public void setDetectionDecay(ActionEvent actionEvent) {
         FingerDetection.instance().setDecay(Double.parseDouble(fxDetectionDecay.getText()));
         fxDetectionDecaySlider.setValue(Double.parseDouble(fxDetectionDecay.getText()));
+    }
+
+    public void setDetectionMaxMoveRange(ActionEvent actionEvent) {
+        FingerDetection.instance().setMaxMoveRange(Integer.parseInt(fxDetectionMaxMoveRange.getText()));
+        fxDetectionMaxMoveRangeSlider.setValue(Integer.parseInt(fxDetectionMaxMoveRange.getText()));
     }
 
     public void checkVideo(ActionEvent actionEvent) {
@@ -299,7 +326,7 @@ public class ControllerMain implements Camera.CameraListener, FingerDetection.De
     }
 
     @Override
-    public void newBlobs(List<Blob> aBlobs) {
+    public void newBlobs(List<Blob> aBlobs, Mat aImageZero) {
         Runnable vPaintBlobsOnCanvas = new Runnable() {
             @Override
             public void run() {
@@ -307,26 +334,28 @@ public class ControllerMain implements Camera.CameraListener, FingerDetection.De
 
                 vGC.save();
 
-                vGC.setFill(Color.WHITE);
-                vGC.setStroke(Color.WHITE);
-                vGC.fillRect(0, 0,fxDetectionVideo.getWidth(),fxDetectionVideo.getHeight());
-
                 vGC.transform(fxDetectionVideo.getWidth()/Camera.instance().getSizeOfFrameX(), 0, 0,fxDetectionVideo.getHeight()/Camera.instance().getSizeOfFrameY(), 0, 0);
 
+                vGC.drawImage(OpenCVToJava.mat2Image(aImageZero),0,0);
+
                 aBlobs.forEach(b->{
-                    vGC.setFill(Color.BLACK);
-                    vGC.setStroke(Color.BLACK);
+                    vGC.setFill(Color.WHITE);
+                    vGC.setStroke(Color.WHITE);
                     b.getPoints().forEach(p->vGC.fillRect(p.getX(),p.getY(),1,1));
-                    vGC.setFill(Color.RED);
-                    vGC.setStroke(Color.RED);
+                    vGC.setFill(Color.ORANGE);
+                    vGC.setStroke(Color.ORANGE);
                     vGC.fillOval(b.getCenter().getX(), b.getCenter().getY(),2,2);
-                    vGC.setFill(Color.PURPLE);
-                    vGC.setStroke(Color.PURPLE);
+                    vGC.setFill(Color.LIME);
+                    vGC.setStroke(Color.LIME);
                     vGC.fillText(Integer.toString(b.getId()),b.getCenter().getX(), b.getCenter().getY());
                 });
                 vGC.restore();
             }
         };
         JavaFX.runOnFXThread(vPaintBlobsOnCanvas);
+    }
+
+    public void resetBaseImage(ActionEvent actionEvent) {
+        FingerDetection.instance().setImageZeroNeedsReset(true);
     }
 }

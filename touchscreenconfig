@@ -1,0 +1,9 @@
+#Configuration TouchScream
+#Thu Feb 21 15:03:13 CET 2019
+DetectionDecay=0.16981132075471697
+DetectionMinNumberOfPixel=10
+DetectionMaxRadius=26
+CameraFPS=30
+CameraId=0
+DetectionThreshold=52
+DetectionMaxMoveRange=64
