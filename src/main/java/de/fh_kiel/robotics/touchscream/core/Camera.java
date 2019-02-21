@@ -79,8 +79,10 @@ public class Camera {
 
     public void setFPS(int aFPS ){
         mFPS = Math.min(Math.max(aFPS,1),1000);
-        stopCapturingFrames();
-        startCapturingFrames();
+        if(mCameraActive) {
+            stopCapturingFrames();
+            startCapturingFrames();
+        }
     }
 
     public int getFPS(){

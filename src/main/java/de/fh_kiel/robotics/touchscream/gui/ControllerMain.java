@@ -20,9 +20,13 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.opencv.core.Mat;
 
+import java.io.*;
 import java.util.List;
+import java.util.Properties;
 
 public class ControllerMain implements Camera.CameraListener, FingerDetection.DetectionListener {
 
@@ -75,6 +79,12 @@ public class ControllerMain implements Camera.CameraListener, FingerDetection.De
     @FXML
     public CheckBox fxCheckCalibration;
 
+    private Stage mStage = null;
+
+    public void setStage(Stage aStage) {
+        mStage = aStage;
+    }
+
     public void initialize() {
         fxCameraVideo.fitWidthProperty().bind(fxCameraVideoPane.widthProperty());
         fxCameraVideo.fitHeightProperty().bind(fxCameraVideoPane.heightProperty());
@@ -123,6 +133,71 @@ public class ControllerMain implements Camera.CameraListener, FingerDetection.De
 
             }
         });
+    }
+
+    public void loadConfiguration(ActionEvent actionEvent) {
+        Properties vProperties = new Properties();
+
+        final FileChooser vFileChooser = new FileChooser();
+        File vFile = vFileChooser.showOpenDialog(mStage);
+        if(vFile == null){
+            return;
+        }
+        try( InputStream vPropertiesStream = new FileInputStream(vFile) ){
+            vProperties.load( vPropertiesStream );
+        }
+        catch ( Exception e ) {
+            e.printStackTrace();
+        }
+
+        String vCameraId = vProperties.getProperty("CameraId", fxCameraId.getText());
+        fxCameraId.setText(vCameraId);
+        Camera.instance().setCameraId(Integer.parseInt(vCameraId));
+        String vCameraFPS = vProperties.getProperty("CameraFPS", fxFPS.getText());
+        fxFPS.setText(vCameraFPS);
+        Camera.instance().setFPS(Integer.parseInt(vCameraFPS));
+
+        String vDetectionThreshold = vProperties.getProperty("DetectionThreshold", fxDetectionThreshold.getText());
+        fxDetectionThreshold.setText(vDetectionThreshold);
+        fxDetectionThresholdSlider.setValue(Double.parseDouble(vDetectionThreshold));
+        FingerDetection.instance().setThreshold(Integer.parseInt(vDetectionThreshold));
+        String vDetectionMaxRadius = vProperties.getProperty("DetectionMaxRadius", fxDetectionMaxRadius.getText());
+        fxDetectionMaxRadius.setText(vDetectionMaxRadius);
+        fxDetectionMaxRadiusSlider.setValue(Double.parseDouble(vDetectionMaxRadius));
+        FingerDetection.instance().setMaxRadius(Integer.parseInt(vDetectionMaxRadius));
+        String vDetectionMinNumberOfPixel = vProperties.getProperty("DetectionMinNumberOfPixel", fxDetectionMinSize.getText());
+        fxDetectionMinSize.setText(vDetectionMinNumberOfPixel);
+        fxDetectionMinSizeSlider.setValue(Double.parseDouble(vDetectionMinNumberOfPixel));
+        FingerDetection.instance().setMinSize(Integer.parseInt(vDetectionMinNumberOfPixel));
+        String vDetectionDecay = vProperties.getProperty("DetectionDecay", fxDetectionDecay.getText());
+        fxDetectionDecay.setText(vDetectionDecay);
+        fxDetectionDecaySlider.setValue(Double.parseDouble(vDetectionDecay));
+        FingerDetection.instance().setDecay(Double.parseDouble(vDetectionDecay));
+
+    }
+
+    public void saveConfiguration(ActionEvent actionEvent) {
+
+        final FileChooser vFileChooser = new FileChooser();
+        File vFile = vFileChooser.showSaveDialog(mStage);
+        if(vFile == null){
+            return;
+        }
+        try (OutputStream out = new FileOutputStream( vFile );){
+            Properties vProperties = new Properties();
+            vProperties.setProperty("CameraId", fxCameraId.getText());
+            vProperties.setProperty("CameraFPS", fxFPS.getText());
+
+            vProperties.setProperty("DetectionThreshold", fxDetectionThreshold.getText());
+            vProperties.setProperty("DetectionMaxRadius", fxDetectionMaxRadius.getText());
+            vProperties.setProperty("DetectionMinNumberOfPixel", fxDetectionMinSize.getText());
+            vProperties.setProperty("DetectionDecay", fxDetectionDecay.getText());
+
+            vProperties.store(out, "Configuration TouchScream");
+        }
+        catch (Exception e ) {
+            e.printStackTrace();
+        }
     }
 
     public void toggleCamera(ActionEvent actionEvent) {

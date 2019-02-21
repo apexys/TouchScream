@@ -1,6 +1,7 @@
 package de.fh_kiel.robotics.touchscream;
 
 import de.fh_kiel.robotics.touchscream.core.Camera;
+import de.fh_kiel.robotics.touchscream.gui.ControllerMain;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -21,7 +22,10 @@ public class Main extends Application{
     @Override
     public void start(Stage primaryStage) throws IOException {
 
-        Parent root = FXMLLoader.load(Main.class.getClassLoader().getResource("MainGui.fxml"));
+        FXMLLoader loader = new FXMLLoader(Main.class.getClassLoader().getResource("MainGui.fxml"));
+        Parent root = (Parent)loader.load();
+        ControllerMain controller = (ControllerMain)loader.getController();
+        controller.setStage(primaryStage);
 
         final Scene scene = new Scene(root, 800, 600);
 
